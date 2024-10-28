@@ -14,6 +14,8 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
+base_container_name="$1"
+user_suffix=$(id -un)
 container_name="$1"
 input_image_name="$2"
 
@@ -24,6 +26,7 @@ else
     if [ -n "$input_image_name" ]; then
         if docker images --format '{{.Repository}}' | grep -q "^$input_image_name$"; then
             echo "Image \"$input_image_name\" found. Creating and starting a new container..."
+            container_name="${base_container_name}-${user_suffix}"
             docker run -it -v "$(pwd):/home/$(id -un)/repo" -d --name "$container_name" "$input_image_name" /bin/bash
         else
             echo "Error: Container $container_name not found."
