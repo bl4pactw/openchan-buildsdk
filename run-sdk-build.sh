@@ -9,6 +9,8 @@ fi
 
 if [ "$#" -lt 1 ]; then
     echo "Usage: $0 <container_name> [<input: image_name>]"
+    echo "Existing containers on the system:"
+    docker ps -a
     exit 1
 fi
 
@@ -19,27 +21,23 @@ if docker ps -a --format '{{.Names}}' | grep -q "^$container_name$"; then
     echo "Container \"$container_name\" already exists. Starting it..."
     docker start "$container_name"
 else
-
     if [ -n "$input_image_name" ]; then
-        
         if docker images --format '{{.Repository}}' | grep -q "^$input_image_name$"; then
             echo "Image \"$input_image_name\" found. Creating and starting a new container..."
             docker run -it -v "$(pwd):/home/$(id -un)/repo" -d --name "$container_name" "$input_image_name" /bin/bash
         else
-	    echo "Error: Container $container_name not found."
+            echo "Error: Container $container_name not found."
             echo "Error: Image $input_image_name not found."
-	    echo "Listing available images:"
+            echo "Listing available images:"
             docker images
             exit 1
         fi
-
     else
         echo "Error: No image provided. Container \"$container_name\" will not be created."
         echo "Available Docker images:"
         docker images
         exit 1
     fi
-
 fi
 
 docker exec -it --user "$(id -un)" "$container_name" /bin/bash
