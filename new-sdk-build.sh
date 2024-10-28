@@ -2,6 +2,8 @@
 
 if [ $# -ne 2 ]; then
   echo "Usage: $0 <output: image_name> <input: dockerfile_path>"
+  echo "Current Docker images on the system:"
+  docker images
   exit 1
 fi
 
