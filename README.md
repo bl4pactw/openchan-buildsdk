@@ -6,6 +6,7 @@
 
 **一旦 docker container 生成，我們可以不用再進行步驟 2)，只要重覆進行 3) 跟 4)**
 
+### 下面以 QuecOpen SDX6x SDK 為使用範例說明：(請再自行替換 dockerfile 跟其它的名稱)
 ### 1) 生成 image
 ```sh
 sudo docker build -t "ub1804-quecopen-x6xsdk-img" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --build-arg USER=$(id -gn) -f dockerfile-quecopen-sdx6x-sdk .
