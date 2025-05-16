@@ -1,0 +1,46 @@
+FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y sudo curl uuid-dev flex bison
+RUN apt-get upgrade -y
+RUN apt-get install -y locales 
+
+# Set up locales
+RUN locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Taipei
+
+RUN apt-get install -y bison gcc make build-essential libc6-dev-i386 libncurses-dev wget coreutils diffstat gawk git git-core help2man libtool libxml2-dev quilt sed subversion texi2html texinfo unzip flex libtinfo5 re2c g++ rsync tree uuid-dev libncurses5-dev wget
+
+RUN perl -MCPAN -e shell
+
+RUN apt-get -y install python2
+RUN apt-get -y install python-pip
+RUN ln -s /usr/bin/python2 /usr/bin/python
+RUN apt-get -y install python3 python3-distutils pip
+RUN pip install enum34
+
+RUN wget https://github.com/ninja-build/ninja/archive/v1.8.2/ninja-1.8.2.tar.gz
+RUN tar xvf ninja-1.8.2.tar.gz
+RUN cd ninja-1.8.2 && ./bootstrap.py
+RUN cp ninja-1.8.2/ninja /usr/bin/
+WORKDIR /
+RUN rm -rf ninja-1.8.2 ninja-1.8.2.tar.gz
+RUN ninja --version
+
+RUN wget -O gn http://storage.googleapis.com/chromium-gn/3fd43e5e0dcc674f0a0c004ec290d04bb2e1c60e
+RUN chmod 777 gn
+RUN cp gn /usr/bin/
+
+# Setup the Docker user when running your container
+ARG USER_ID
+ARG GROUP_ID
+ARG USER
+ARG PASSWD="0000"
+
+RUN addgroup --gid $GROUP_ID $USER
+RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID $USER && echo "$USER:$PASSWD" | chpasswd
+RUN adduser $USER sudo
+

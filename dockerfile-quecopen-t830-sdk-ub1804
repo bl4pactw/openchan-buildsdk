@@ -1,0 +1,49 @@
+FROM ubuntu:18.04
+RUN apt-get update && apt-get install -y sudo curl uuid-dev flex bison
+RUN apt-get upgrade -y
+RUN apt-get install -y locales 
+
+# Set up locales
+RUN locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Taipei
+
+RUN apt-get install -y bison gcc make build-essential libc6-dev-i386 libncurses-dev wget coreutils diffstat gawk git git-core help2man libtool libxml2-dev quilt sed subversion texi2html texinfo unzip flex libtinfo5 re2c g++
+RUN perl -MCPAN -e shell
+RUN apt-get -y install python wget
+RUN wget https://github.com/ninja-build/ninja/archive/v1.8.2/ninja-1.8.2.tar.gz
+RUN tar xvf ninja-1.8.2.tar.gz
+RUN cd ninja-1.8.2 && ./bootstrap.py
+RUN cp ninja-1.8.2/ninja /usr/bin/
+WORKDIR /
+RUN rm -rf ninja-1.8.2 ninja-1.8.2.tar.gz
+RUN ninja --version
+
+RUN wget -O gn http://storage.googleapis.com/chromium-gn/3fd43e5e0dcc674f0a0c004ec290d04bb2e1c60e
+RUN chmod 777 gn
+RUN cp gn /usr/bin/
+
+
+#RUN apt-get install -y gcc g++ binutils patch bzip2 flex make gettext pkg-config unzip zlib1g-dev libc6-dev subversion libncurses5-dev gawk sharutils curl libxml-parser-perl python-yaml ocaml-nox ocaml 
+#RUN apt-get install -y libssl-dev libfdt-dev coccinelle pkg-config ocaml-findlib libpycaml-ocaml-dev libmenhir-ocaml-dev gcc-multilib g++-multilib uuid uuid-dev net-tools build-essential chrpath coreutils cvs 
+#RUN apt-get install -y desktop-file-utils diffstat docbook-utils fakeroot git help2man libmpfr-dev libreadline6-dev libtool libxml2-dev python-pip python-pysqlite2 quilt sed texi2html texinfo wget vim bison tree openjdk-8-jdk
+#RUN apt-get install -y cryptsetup-bin
+
+# make /bin/sh symlink to bash instead of dash:
+#RUN echo "dash dash/sh boolean false" | debconf-set-selections
+#RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+
+# Setup the Docker user when running your container
+ARG USER_ID
+ARG GROUP_ID
+ARG USER
+ARG PASSWD="0000"
+
+RUN addgroup --gid $GROUP_ID $USER
+RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID $USER && echo "$USER:$PASSWD" | chpasswd
+RUN adduser $USER sudo
+
