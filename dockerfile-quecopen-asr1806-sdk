@@ -1,0 +1,28 @@
+FROM ubuntu:16.04
+RUN apt-get update && apt-get install -y sudo curl uuid-dev flex bison libssl-dev automake autoconf libtool fakeroot bc python python3 build-essential liblzo2-2
+RUN apt-get install -y locales zlib1g-dev libncurses5-dev subversion quilt intltool ruby fastjar zip unzip gawk git-core
+RUN apt-get install -y python python-pip wget dos2unix
+# RUN apt-get update && apt-get install -y python3-pip && pip3 install --no-cache-dir pyhocon
+
+# make /bin/sh symlink to bash instead of dash:
+# RUN echo "dash dash/sh boolean false" | debconf-set-selections
+# RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+
+# Set up locales
+RUN locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+# 安裝 gosu (用來切換使用者)
+RUN apt-get update && apt-get install -y gosu
+RUN pip install --no-cache-dir pyhocon
+
+# 建立 entrypoint.sh
+RUN mkdir -p /usr/local/bin
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/bin/bash"]
+
