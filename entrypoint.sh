@@ -19,6 +19,12 @@ fi
 # 確保家目錄存在
 mkdir -p /home/${USER_NAME}
 chown ${USER_ID}:${GROUP_ID} /home/${USER_NAME}
+export HOME=${USER_HOME}
+
+# 允許該使用者無密碼使用 sudo
+if ! grep -q "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" /etc/sudoers; then
+    echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+fi
 
 # 切換到該使用者執行
 exec gosu ${USER_NAME} "$@"
