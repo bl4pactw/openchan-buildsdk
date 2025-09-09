@@ -19,13 +19,13 @@ RUN apt-get install -y dos2unix java-wrappers openjdk-8-jdk rsync
 RUN echo "dash dash/sh boolean false" | debconf-set-selections
 RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 
-# Setup the Docker user when running your container
-ARG USER_ID
-ARG GROUP_ID
-ARG USER
-ARG PASSWD="0000"
+# 安裝 gosu (用來切換使用者)
+RUN apt-get update && apt-get install -y gosu
 
-RUN addgroup --gid $GROUP_ID $USER
-RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID $USER && echo "$USER:$PASSWD" | chpasswd
-RUN adduser $USER sudo
+# 建立 entrypoint.sh
+RUN mkdir -p /usr/local/bin
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/bin/bash"]
