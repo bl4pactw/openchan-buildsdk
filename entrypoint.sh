@@ -21,6 +21,11 @@ mkdir -p /home/${USER_NAME}
 chown ${USER_ID}:${GROUP_ID} /home/${USER_NAME}
 export HOME=${USER_HOME}
 
+# 修正 SDK volume 權限
+if [ -d "/home/${USER_NAME}/sdk" ]; then
+    chown -R ${USER_ID}:${GROUP_ID} /home/${USER_NAME}/sdk
+fi
+
 # 允許該使用者無密碼使用 sudo
 if ! grep -q "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" /etc/sudoers; then
     echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
