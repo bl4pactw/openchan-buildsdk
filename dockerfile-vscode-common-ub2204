@@ -1,0 +1,26 @@
+FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y sudo curl uuid-dev flex bison
+RUN apt-get upgrade -y
+RUN apt-get install -y locales 
+
+# Set up locales
+RUN locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Taipei
+
+RUN apt-get install -y bison gcc make build-essential libc6-dev-i386 libncurses-dev wget coreutils diffstat gawk git git-core help2man libtool libxml2-dev quilt sed subversion texi2html texinfo unzip flex libtinfo5 re2c g++ rsync tree uuid-dev libncurses5-dev wget
+
+# 安裝 gosu (用來切換使用者)
+RUN apt-get update && apt-get install -y gosu
+
+# 建立 entrypoint.sh
+RUN mkdir -p /usr/local/bin
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/bin/bash"]

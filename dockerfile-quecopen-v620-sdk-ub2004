@@ -1,0 +1,32 @@
+FROM ubuntu:20.04
+RUN apt-get update && apt-get install -y sudo curl uuid-dev flex bison
+RUN apt-get install -y locales 
+
+# Set up locales
+RUN locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Taipei
+
+RUN apt-get install -y cpio libzstd1 gcc g++ build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch flex bison make autoconf 
+RUN apt-get install -y texinfo unzip sharutils subversion ncurses-term zlib1g-dev ccache upx lib32gcc1 libc6-dev-i386 uglifyjs git-core gcc-multilib p7zip p7zip-full 
+RUN apt-get install -y msmtp libssl-dev libglib2.0-dev xmlto qemu-utils automake libtool perl unzip cpio bsdiff zstd python3-jinja2 libarchive-zip-perl rsync wget python
+
+
+# make /bin/sh symlink to bash instead of dash:
+# RUN echo "dash dash/sh boolean false" | debconf-set-selections
+# RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+
+# 安裝 gosu (用來切換使用者)
+RUN apt-get update && apt-get install -y gosu
+
+# 建立 entrypoint.sh
+RUN mkdir -p /usr/local/bin
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/bin/bash"]
