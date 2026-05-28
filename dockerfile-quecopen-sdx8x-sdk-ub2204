@@ -1,0 +1,34 @@
+FROM ubuntu:22.04
+RUN apt-get update
+RUN apt-get install -y sudo curl uuid-dev flex bison
+RUN apt-get install -y locales 
+
+# Set up locales
+RUN locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Taipei
+
+RUN apt-get install -y gcc g++ binutils patch bzip2 flex make gettext pkg-config unzip zlib1g-dev libc6-dev subversion libncurses5-dev gawk
+RUN apt-get install -y sharutils curl libxml-parser-perl python3-yaml ocaml-nox ocaml ocaml-findlib libssl-dev libfdt-dev coccinelle
+RUN apt-get install -y ocaml-native-compilers libmenhir-ocaml-dev libpcre-ocaml-dev bison rsync uuid-dev git wget python3-distutils crudini jq zip unzip
+
+# make /bin/sh symlink to bash instead of dash:
+RUN echo "dash dash/sh boolean false" | debconf-set-selections
+RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+
+RUN ln -s /usr/bin/python3.10 /usr/bin/python
+
+# 安裝 gosu (用來切換使用者)
+RUN apt-get update && apt-get install -y gosu
+
+# 建立 entrypoint.sh
+RUN mkdir -p /usr/local/bin
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/bin/bash"]
