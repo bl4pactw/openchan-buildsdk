@@ -1,8 +1,6 @@
 # openchan
 
-openchan 是一套開放建制 QuecOpen Docker 鏡像的專案。名稱取自「Open 將」的諧音，代表把 QuecOpen SDK 在不同硬體平台上的編譯環境打開、整理並容器化，讓開發者可以用一致的 Docker image 建立可重複使用的 SDK build environment。
-
-本專案適合用來建立 QuecOpen SDK 各硬體平台的編譯環境，包含 ASR1806、SDX35、SDX6x、SDX7x、SDX8x、T830、V620 等平台，以及給 Jenkins/CI 使用的固定使用者版本。
+本專案適合用來建立 QuecOpen SDK 各硬體平台以 Docker 為基礎的編譯環境，包含 ASR1806、SDX35、SDX6x、SDX7x、SDX8x、T830、V620 等平台，以及給 Jenkins/CI 使用的固定使用者版本。
 
 ## Docker Hub 預建鏡像
 
