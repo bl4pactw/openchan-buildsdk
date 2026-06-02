@@ -80,7 +80,7 @@ docker run -it --rm \
 | `dockerfile-quecopen-v620-sdk-ub2004` | V620 SDK 編譯環境，Ubuntu 20.04 |
 | `dockerfile-vscode-common-ub2204` | VS Code / common 開發用基礎環境，Ubuntu 22.04 |
 | `entrypoint.sh` | 依照主機 UID/GID 建立容器內使用者，降低 volume 權限問題 |
-| `script-dev/` | 建置、啟動與除錯 Docker image/container 的輔助腳本 |
+| `script-dev/` | 建置、啟動與除錯 Docker image/container 的輔助腳本（開發中） |
 
 ## 特色
 
@@ -91,7 +91,9 @@ docker run -it --rm \
 - 預設 locale 為 `en_US.UTF-8`，時區設定為 `Asia/Taipei`。
 - T830 環境另外準備 Ninja 與 GN 等建置工具。
 
-## 使用 script-dev 腳本
+## 使用 script-dev 腳本（開發中）
+
+> 此目錄仍在開發中，腳本介面、參數與預設 image 名稱可能會調整。穩定使用情境建議優先參考上方 Docker Hub 預建 image 與 Dockerfile build 流程。
 
 `script-dev/new-sdk-build.sh` 可用來建立 Docker image：
 
@@ -149,5 +151,5 @@ ub2204-quecopen-sdx8x-sdk-ci
 - Docker Hub 預建 image 是為了減少客戶端重新生成 image 的動作；若需要完全可追溯的內部版本，建議保留對應 Dockerfile 與 image tag。
 - Dockerfile 會安裝大量 SDK build dependencies，第一次 build 可能需要較長時間。
 - 部分 Dockerfile 會從外部下載工具，例如 Ninja 或 GN，build 時需可連線到對應來源。
-- `script-dev/run-sdk-build.sh` 需要目前使用者具備 Docker 權限，通常需加入 `docker` group。
+- `script-dev/` 目前標示為開發中；`script-dev/run-sdk-build.sh` 需要目前使用者具備 Docker 權限，通常需加入 `docker` group。
 - 實際 SDK 編譯指令仍以各 QuecOpen SDK release package 內的文件為準。
