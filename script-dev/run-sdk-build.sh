@@ -27,7 +27,7 @@ else
         if docker images --format '{{.Repository}}' | grep -q "^$input_image_name$"; then
             echo "Image \"$input_image_name\" found. Creating and starting a new container..."
             container_name="${base_container_name}-${user_suffix}"
-            docker run -it -v "$(pwd):/home/$(id -un)/repo" -d --name "$container_name" "$input_image_name" /bin/bash
+            docker run -it -v "$HOME/sdk:/home/$(id -un)/sdk" -d --name "$container_name" "$input_image_name" /bin/bash
         else
             echo "Error: Container $container_name not found."
             echo "Error: Image $input_image_name not found."

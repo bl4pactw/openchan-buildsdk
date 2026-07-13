@@ -36,19 +36,24 @@
 docker pull bradlu4/ub2204-quecopen-sdx8x-img:260528
 ```
 
-啟動互動式容器並掛載目前專案目錄：
+啟動互動式容器。這裡只把本地端的 `$HOME/sdk`（由使用者自行準備、用來放置第三方 SDK 源碼包的目錄）掛載到容器內同名使用者的 `~/sdk`；家目錄下的其他檔案（如 `.bashrc`、`.ssh`）本地與容器互不干擾。請先在本地端建立此目錄：
+
+```bash
+mkdir -p "$HOME/sdk"   # 把要編譯的 SDK 源碼包放進這裡
+```
+
 
 ```bash
 docker run -it --rm \
   -e LOCAL_UID=$(id -u) \
   -e LOCAL_GID=$(id -g) \
   -e LOCAL_USER=$(id -un) \
-  -v "$(pwd):/home/$(id -un)/repo" \
+  -v "$HOME/sdk:/home/$(id -un)/sdk" \
   bradlu4/ub2204-quecopen-sdx8x-img:260528 \
   /bin/bash
 ```
 
-進入容器後，可將 QuecOpen SDK 放在掛載目錄中，再依 SDK 原本的 build command 進行編譯。
+進入容器後，SDK 源碼包會位於 `~/sdk`（即本地端的 `$HOME/sdk`），可依 SDK 原本的 build command 進行編譯。
 
 ## 從 Dockerfile 自行 build
 
@@ -65,7 +70,7 @@ docker run -it --rm \
   -e LOCAL_UID=$(id -u) \
   -e LOCAL_GID=$(id -g) \
   -e LOCAL_USER=$(id -un) \
-  -v "$(pwd):/home/$(id -un)/repo" \
+  -v "$HOME/sdk:/home/$(id -un)/sdk" \
   openchan-t830-ub2204 \
   /bin/bash
 ```
@@ -185,5 +190,6 @@ ub2204-quecopen-sdx8x-sdk-ci
 - Docker Hub 預建 image 是為了減少客戶端重新生成 image 的動作；若需要完全可追溯的內部版本，建議保留對應 Dockerfile 與 image tag。
 - Dockerfile 會安裝大量 SDK build dependencies，第一次 build 可能需要較長時間。
 - 部分 Dockerfile 會從外部下載工具，例如 Ninja 或 GN，build 時需可連線到對應來源。
+- ASR1806（Ubuntu 16.04）因為內建的是 Python 2.7／pip 8.1.1，安裝 `pyhocon` 時**必須鎖定版本** `pip install "pyparsing==2.4.7" "pyhocon==0.3.60"`；否則 pip 會嘗試拉取只支援 Python 3 的新版 `pyparsing` 導致 build 失敗。此為 `dockerfiles/dockerfile-quecopen-asr1806-sdk-ub1604` 與 `Dockerfile.unified` 的 `asr1806` 區塊採用的版本組合，也與 Docker Hub 上既有可用 image（pyparsing 2.4.7 + pyhocon 0.3.60）一致。
 - `script-dev/` 目前標示為開發中；`script-dev/run-sdk-build.sh` 需要目前使用者具備 Docker 權限，通常需加入 `docker` group。
 - 實際 SDK 編譯指令仍以各 QuecOpen SDK release package 內的文件為準。
