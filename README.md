@@ -2,21 +2,29 @@
 
 本專案適合用來建立 QuecOpen SDK 各硬體平台以 Docker 為基礎的編譯環境，包含 ASR1806、SDX35、SDX6x、SDX7x、SDX8x、T830、V620 等平台，以及給 Jenkins/CI 使用的固定使用者版本。
 
+## 三種建置方式
+
+本專案提供三種方式取得或建置 QuecOpen SDK 編譯環境的 Docker container，可依需求擇一使用：
+
+1. **使用 Docker Hub 預建 image**（最快）：直接 `docker pull` 對應平台的預建 image，不需在本機重新 build。適合一般客戶或使用者。詳見〈[Docker Hub 預建鏡像](#docker-hub-預建鏡像)〉與〈[快速開始：使用預建 image](#快速開始使用預建-image)〉。
+2. **從個別平台 Dockerfile 自行 build**：使用 `dockerfiles/` 下各平台獨立的 Dockerfile 自行建置，適合需要調整套件或建立內部版本時。詳見〈[從 Dockerfile 自行 build](#從-dockerfile-自行-build)〉。
+3. **使用統一 Dockerfile + `build-image.sh` 建置**：透過 `dockerfiles/Dockerfile.unified` 搭配 `build-image.sh`，以平台代號一鍵切換平台與 dev/CI 變體，只需維護一份套件清單。詳見〈[使用統一 Dockerfile 建置](#使用統一-dockerfilebuild-imagesh)〉。
+
 ## Docker Hub 預建鏡像
 
 本專案中的 Dockerfile 與 Docker Hub 上的 [`bradlu4`](https://hub.docker.com/u/bradlu4) image 相互對應。一般客戶或使用者可優先直接 `docker pull` 預建鏡像，避免在本機重新安裝大量套件與等待 Docker build；只有在需要調整套件、更新 Dockerfile 或建立內部版本時，再使用本 repo 的 Dockerfile 重新 build。
 
 | 平台 / 用途 | Docker Hub image | 目前主要 tag | 對應 Dockerfile |
 | --- | --- | --- | --- |
-| ASR1806 SDK | `bradlu4/ub1604-quecopen-asr1806sdk-img` | `250909` | `dockerfile-quecopen-asr1806-sdk-ub1604` |
-| SDX35 SDK | `bradlu4/ub1804-quecopen-x35sdk-img` | `250909` | `dockerfile-quecopen-sdx35-sdk-ub1804` |
-| SDX6x SDK | `bradlu4/ub1804-quecopen-x6xsdk-img` | `250917` | `dockerfile-quecopen-sdx6x-sdk-ub1804` |
-| SDX7x SDK | `bradlu4/ub1804-quecopen-x7xsdk-img` | `250909` | `dockerfile-quecopen-sdx7x-sdk-ub1804` |
-| SDX8x SDK | `bradlu4/ub2204-quecopen-sdx8x-img` | `260528` | `dockerfile-quecopen-sdx8x-sdk-ub2204` |
-| T830 SDK, Ubuntu 18.04 | `bradlu4/ub1804-quecopen-t830sdk-img` | `250909` | `dockerfile-quecopen-t830-sdk-ub1804` |
-| T830 SDK, Ubuntu 22.04 | `bradlu4/ub2204-quecopen-t830sdk-img` | `250909` | `dockerfile-quecopen-t830-sdk-ub2204` |
-| T830 CI, Ubuntu 18.04 | `bradlu4/ub1804-ci-quecopen-t830-img` | `latest` | `dockerfile-quecopen-t830-sdk-ub1804-ci` |
-| V620 SDK | `bradlu4/ub2004-quecopen-v620-img` | `latest` | `dockerfile-quecopen-v620-sdk-ub2004` |
+| ASR1806 SDK | `bradlu4/ub1604-quecopen-asr1806sdk-img` | `250909` | `dockerfiles/dockerfile-quecopen-asr1806-sdk-ub1604` |
+| SDX35 SDK | `bradlu4/ub1804-quecopen-x35sdk-img` | `250909` | `dockerfiles/dockerfile-quecopen-sdx35-sdk-ub1804` |
+| SDX6x SDK | `bradlu4/ub1804-quecopen-x6xsdk-img` | `250917` | `dockerfiles/dockerfile-quecopen-sdx6x-sdk-ub1804` |
+| SDX7x SDK | `bradlu4/ub1804-quecopen-x7xsdk-img` | `250909` | `dockerfiles/dockerfile-quecopen-sdx7x-sdk-ub1804` |
+| SDX8x SDK | `bradlu4/ub2204-quecopen-sdx8x-img` | `260528` | `dockerfiles/dockerfile-quecopen-sdx8x-sdk-ub2204` |
+| T830 SDK, Ubuntu 18.04 | `bradlu4/ub1804-quecopen-t830sdk-img` | `250909` | `dockerfiles/dockerfile-quecopen-t830-sdk-ub1804` |
+| T830 SDK, Ubuntu 22.04 | `bradlu4/ub2204-quecopen-t830sdk-img` | `250909` | `dockerfiles/dockerfile-quecopen-t830-sdk-ub2204` |
+| T830 CI, Ubuntu 18.04 | `bradlu4/ub1804-ci-quecopen-t830-img` | `latest` | `dockerfiles/dockerfile-quecopen-t830-sdk-ub1804-ci` |
+| V620 SDK | `bradlu4/ub2004-quecopen-v620-img` | `latest` | `dockerfiles/dockerfile-quecopen-v620-sdk-ub2004` |
 
 > Docker Hub 的 tag 可能會隨 image 發布而更新，實際可用 tag 請以各 image 的 Tags 頁面為準。
 
@@ -47,7 +55,7 @@ docker run -it --rm \
 若需要自行修改或重新生成 image，可選擇對應平台 Dockerfile，例如 T830 Ubuntu 22.04：
 
 ```bash
-docker build -t openchan-t830-ub2204 -f dockerfile-quecopen-t830-sdk-ub2204 .
+docker build -t openchan-t830-ub2204 -f dockerfiles/dockerfile-quecopen-t830-sdk-ub2204 dockerfiles
 ```
 
 再用本機 image 啟動容器：
@@ -62,24 +70,50 @@ docker run -it --rm \
   /bin/bash
 ```
 
+## 使用統一 Dockerfile 建置（`build-image.sh`）
+
+`dockerfiles/Dockerfile.unified` 將 `dockerfiles/` 下各平台獨立的 Dockerfile 整合成一份，透過 `PLATFORM`／`OS_VERSION`／`VARIANT` build args 切換平台與 dev/CI 變體，方便日後只需維護一份套件清單。原本 13 份平台別 Dockerfile 仍保留、可繼續使用，兩種方式並存。
+
+在 repo 根目錄執行 `build-image.sh`，依平台代號產生對應 image：
+
+```bash
+# 產生 SDX8x dev image
+./build-image.sh -p sdx8x
+
+# 產生 T830 Ubuntu 18.04 CI image
+./build-image.sh -p t830 -o ub1804 -v ci
+
+# 自訂 tag
+./build-image.sh -p sdx7x -v ci -t my-sdx7x-ci-img
+
+# 列出支援的平台/os/variant 組合
+./build-image.sh -l
+```
+
+支援的平台代號：`asr1806`、`sdx35`、`sdx6x`、`sdx7x`、`sdx8x`、`t830`、`v620`、`vscode`。只有 `t830` 需要用 `-o` 指定 Ubuntu 版本（`ub1804` 或 `ub2204`）；只有 `sdx7x`／`sdx8x`／`t830` 支援 `-v ci`。預設 tag 命名規則為 `<os_version>-quecopen-<platform>-sdk[-ci]`，如需對齊 Docker Hub 既有名稱可用 `-t` 覆蓋。
+
+Build 完成後的啟動方式與上方「快速開始」相同，將 image 名稱換成建置出來的 tag 即可。
+
 ## 專案內容
 
 | 檔案 | 用途 |
 | --- | --- |
-| `dockerfile-quecopen-asr1806-sdk-ub1604` | ASR1806 SDK 編譯環境，Ubuntu 16.04 |
-| `dockerfile-quecopen-sdx35-sdk-ub1804` | SDX35 SDK 編譯環境，Ubuntu 18.04 |
-| `dockerfile-quecopen-sdx6x-sdk-ub1804` | SDX6x SDK 編譯環境，Ubuntu 18.04 |
-| `dockerfile-quecopen-sdx7x-sdk-ub1804` | SDX7x SDK 編譯環境，Ubuntu 18.04 |
-| `dockerfile-quecopen-sdx7x-sdk-ub1804-ci` | SDX7x SDK CI 編譯環境，Ubuntu 18.04 |
-| `dockerfile-quecopen-sdx8x-sdk-ub2204` | SDX8x SDK 編譯環境，Ubuntu 22.04 |
-| `dockerfile-quecopen-sdx8x-sdk-ub2204-ci` | SDX8x SDK CI 編譯環境，Ubuntu 22.04 |
-| `dockerfile-quecopen-t830-sdk-ub1804` | T830 SDK 編譯環境，Ubuntu 18.04 |
-| `dockerfile-quecopen-t830-sdk-ub1804-ci` | T830 SDK CI 編譯環境，Ubuntu 18.04 |
-| `dockerfile-quecopen-t830-sdk-ub2204` | T830 SDK 編譯環境，Ubuntu 22.04 |
-| `dockerfile-quecopen-t830-sdk-ub2204-ci` | T830 SDK CI 編譯環境，Ubuntu 22.04 |
-| `dockerfile-quecopen-v620-sdk-ub2004` | V620 SDK 編譯環境，Ubuntu 20.04 |
-| `dockerfile-vscode-common-ub2204` | VS Code / common 開發用基礎環境，Ubuntu 22.04 |
-| `entrypoint.sh` | 依照主機 UID/GID 建立容器內使用者，降低 volume 權限問題 |
+| `dockerfiles/Dockerfile.unified` | 整合所有平台的統一 Dockerfile，搭配 `build-image.sh` 與 `PLATFORM`/`OS_VERSION`/`VARIANT` build args 使用 |
+| `build-image.sh` | 依平台代號呼叫 `dockerfiles/Dockerfile.unified` 產生 image 的建置腳本 |
+| `dockerfiles/dockerfile-quecopen-asr1806-sdk-ub1604` | ASR1806 SDK 編譯環境，Ubuntu 16.04 |
+| `dockerfiles/dockerfile-quecopen-sdx35-sdk-ub1804` | SDX35 SDK 編譯環境，Ubuntu 18.04 |
+| `dockerfiles/dockerfile-quecopen-sdx6x-sdk-ub1804` | SDX6x SDK 編譯環境，Ubuntu 18.04 |
+| `dockerfiles/dockerfile-quecopen-sdx7x-sdk-ub1804` | SDX7x SDK 編譯環境，Ubuntu 18.04 |
+| `dockerfiles/dockerfile-quecopen-sdx7x-sdk-ub1804-ci` | SDX7x SDK CI 編譯環境，Ubuntu 18.04 |
+| `dockerfiles/dockerfile-quecopen-sdx8x-sdk-ub2204` | SDX8x SDK 編譯環境，Ubuntu 22.04 |
+| `dockerfiles/dockerfile-quecopen-sdx8x-sdk-ub2204-ci` | SDX8x SDK CI 編譯環境，Ubuntu 22.04 |
+| `dockerfiles/dockerfile-quecopen-t830-sdk-ub1804` | T830 SDK 編譯環境，Ubuntu 18.04 |
+| `dockerfiles/dockerfile-quecopen-t830-sdk-ub1804-ci` | T830 SDK CI 編譯環境，Ubuntu 18.04 |
+| `dockerfiles/dockerfile-quecopen-t830-sdk-ub2204` | T830 SDK 編譯環境，Ubuntu 22.04 |
+| `dockerfiles/dockerfile-quecopen-t830-sdk-ub2204-ci` | T830 SDK CI 編譯環境，Ubuntu 22.04 |
+| `dockerfiles/dockerfile-quecopen-v620-sdk-ub2004` | V620 SDK 編譯環境，Ubuntu 20.04 |
+| `dockerfiles/dockerfile-vscode-common-ub2204` | VS Code / common 開發用基礎環境，Ubuntu 22.04 |
+| `dockerfiles/entrypoint.sh` | 依照主機 UID/GID 建立容器內使用者，降低 volume 權限問題 |
 | `script-dev/` | 建置、啟動與除錯 Docker image/container 的輔助腳本（開發中） |
 
 ## 特色
@@ -99,7 +133,7 @@ docker run -it --rm \
 
 ```bash
 cd script-dev
-./new-sdk-build.sh openchan-sdx7x ../dockerfile-quecopen-sdx7x-sdk-ub1804
+./new-sdk-build.sh openchan-sdx7x ../dockerfiles/dockerfile-quecopen-sdx7x-sdk-ub1804
 ```
 
 `script-dev/run-sdk-build.sh` 可用來建立或重新進入容器：

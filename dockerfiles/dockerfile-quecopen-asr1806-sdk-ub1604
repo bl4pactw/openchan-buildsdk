@@ -16,7 +16,9 @@ ENV LC_ALL en_US.UTF-8
 
 # 安裝 gosu (用來切換使用者)
 RUN apt-get update && apt-get install -y gosu
-RUN pip install --no-cache-dir pyhocon
+# Ubuntu 16.04 ships pip 8.1.1 on Python 2.7; pin to the last versions that
+# still support Python 2.7 so pip does not pull in an incompatible pyparsing 3.x
+RUN pip install --no-cache-dir "pyparsing==2.4.7" "pyhocon==0.3.60"
 
 # 建立 entrypoint.sh
 RUN mkdir -p /usr/local/bin

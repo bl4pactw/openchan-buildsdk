@@ -1,0 +1,131 @@
+ARG BASE_IMAGE=ubuntu:22.04
+FROM ${BASE_IMAGE}
+
+ARG PLATFORM
+ARG OS_VERSION
+ARG VARIANT=dev
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Taipei \
+    VARIANT=${VARIANT} \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8
+
+# 所有平台共用的基礎套件與 locale
+RUN apt-get update && apt-get install -y sudo curl uuid-dev flex bison locales && \
+    locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+
+# 平台專屬套件與建置步驟，對應原本 dockerfiles/dockerfile-quecopen-* 各檔案的內容
+RUN set -eux; \
+    install_ninja_gn() { \
+      wget -q https://github.com/ninja-build/ninja/archive/v1.8.2/ninja-1.8.2.tar.gz; \
+      tar xf ninja-1.8.2.tar.gz; \
+      (cd ninja-1.8.2 && ./bootstrap.py); \
+      cp ninja-1.8.2/ninja /usr/bin/; \
+      rm -rf ninja-1.8.2 ninja-1.8.2.tar.gz; \
+      ninja --version; \
+      wget -q -O /usr/bin/gn http://storage.googleapis.com/chromium-gn/3fd43e5e0dcc674f0a0c004ec290d04bb2e1c60e; \
+      chmod 755 /usr/bin/gn; \
+    }; \
+    fix_dash() { \
+      echo "dash dash/sh boolean false" | debconf-set-selections; \
+      DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash; \
+    }; \
+    apt-get update; \
+    case "${PLATFORM}" in \
+      asr1806) \
+        apt-get install -y libssl-dev automake autoconf libtool fakeroot bc python python3 build-essential liblzo2-2 \
+          zlib1g-dev libncurses5-dev subversion quilt intltool ruby fastjar zip unzip gawk git-core \
+          python-pip wget dos2unix; \
+        pip install --no-cache-dir "pyparsing==2.4.7" "pyhocon==0.3.60" \
+        ;; \
+      sdx35) \
+        apt-get install -y gcc g++ binutils patch bzip2 flex make gettext pkg-config unzip zlib1g-dev libc6-dev \
+          subversion libncurses5-dev gawk sharutils curl libxml-parser-perl python-yaml ocaml-nox ocaml ocaml-findlib \
+          libssl-dev libfdt-dev coccinelle ocaml-native-compilers libpycaml-ocaml-dev libmenhir-ocaml-dev \
+          libpcre-ocaml-dev gcc-multilib g++-multilib uuid uuid-dev net-tools build-essential chrpath coreutils cvs \
+          desktop-file-utils diffstat docbook-utils fakeroot git help2man libmpfr-dev libreadline6-dev libtool \
+          libxml2-dev python-pip python-pysqlite2 quilt sed texi2html texinfo wget vim bison tree \
+          dos2unix java-wrappers openjdk-8-jdk rsync; \
+        fix_dash \
+        ;; \
+      sdx6x) \
+        apt-get install -y gcc g++ binutils patch bzip2 flex make gettext pkg-config unzip zlib1g-dev libc6-dev \
+          subversion libncurses5-dev gawk sharutils curl libxml-parser-perl python-yaml ocaml-nox ocaml \
+          libssl-dev libfdt-dev coccinelle ocaml-findlib libpycaml-ocaml-dev libmenhir-ocaml-dev gcc-multilib \
+          g++-multilib uuid uuid-dev net-tools build-essential chrpath coreutils cvs dos2unix desktop-file-utils \
+          diffstat docbook-utils fakeroot git help2man libmpfr-dev libreadline6-dev libtool libxml2-dev python-pip \
+          python-pysqlite2 quilt sed texi2html texinfo wget vim bison tree openjdk-8-jdk bc liblzo2-dev libgmp3-dev cpio; \
+        fix_dash \
+        ;; \
+      sdx7x) \
+        apt-get install -y gcc g++ binutils patch bzip2 flex make gettext pkg-config unzip zlib1g-dev libc6-dev \
+          subversion libncurses5-dev gawk sharutils curl libxml-parser-perl python-yaml ocaml-nox ocaml \
+          libssl-dev libfdt-dev coccinelle ocaml-findlib libpycaml-ocaml-dev libmenhir-ocaml-dev gcc-multilib \
+          g++-multilib uuid uuid-dev net-tools build-essential chrpath coreutils cvs desktop-file-utils diffstat \
+          docbook-utils fakeroot git help2man libmpfr-dev libreadline6-dev libtool libxml2-dev python-pip \
+          python-pysqlite2 quilt sed texi2html texinfo wget vim bison tree openjdk-8-jdk cryptsetup-bin rsync; \
+        fix_dash \
+        ;; \
+      sdx8x) \
+        apt-get install -y gcc g++ binutils patch bzip2 flex make gettext pkg-config unzip zlib1g-dev libc6-dev \
+          subversion libncurses5-dev gawk sharutils curl libxml-parser-perl python3-yaml ocaml-nox ocaml \
+          ocaml-findlib libssl-dev libfdt-dev coccinelle ocaml-native-compilers libmenhir-ocaml-dev libpcre-ocaml-dev \
+          bison rsync uuid-dev git wget python3-distutils crudini jq zip unzip; \
+        fix_dash; \
+        ln -sf /usr/bin/python3.10 /usr/bin/python \
+        ;; \
+      t830) \
+        apt-get install -y bison gcc make build-essential libc6-dev-i386 libncurses-dev wget coreutils diffstat gawk \
+          git git-core help2man libtool libxml2-dev quilt sed subversion texi2html texinfo unzip flex libtinfo5 \
+          re2c g++ rsync; \
+        apt-get upgrade -y; \
+        case "${OS_VERSION}" in \
+          ub1804) \
+            perl -MCPAN -e shell; \
+            apt-get install -y python wget; \
+            install_ninja_gn \
+            ;; \
+          ub2204) \
+            apt-get install -y tree uuid-dev libncurses5-dev; \
+            perl -MCPAN -e shell; \
+            apt-get install -y python2 python-pip; \
+            ln -sf /usr/bin/python2 /usr/bin/python; \
+            apt-get install -y python3 python3-distutils pip; \
+            pip install enum34; \
+            install_ninja_gn \
+            ;; \
+          *) \
+            echo "t830 requires OS_VERSION=ub1804|ub2204" >&2; \
+            exit 1 \
+            ;; \
+        esac \
+        ;; \
+      v620) \
+        apt-get install -y cpio libzstd1 gcc g++ build-essential asciidoc binutils bzip2 gawk gettext git \
+          libncurses5-dev libz-dev patch flex bison make autoconf texinfo unzip sharutils subversion ncurses-term \
+          zlib1g-dev ccache upx lib32gcc1 libc6-dev-i386 uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp \
+          libssl-dev libglib2.0-dev xmlto qemu-utils automake libtool perl unzip cpio bsdiff zstd python3-jinja2 \
+          libarchive-zip-perl rsync wget python \
+        ;; \
+      vscode) \
+        apt-get install -y bison gcc make build-essential libc6-dev-i386 libncurses-dev wget coreutils diffstat \
+          gawk git git-core help2man libtool libxml2-dev quilt sed subversion texi2html texinfo unzip flex \
+          libtinfo5 re2c g++ rsync tree uuid-dev libncurses5-dev \
+        ;; \
+      *) \
+        echo "unknown PLATFORM: ${PLATFORM}" >&2; \
+        exit 1 \
+        ;; \
+    esac; \
+    apt-get install -y gosu; \
+    rm -rf /var/lib/apt/lists/*
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# CI 變體才建立固定 builder 帳號，dev 變體維持與現行 dev Dockerfile 一致（不建立）
+RUN if [ "${VARIANT}" = "ci" ]; then groupadd -g 1000 builder && useradd -m -u 1000 -g 1000 builder; fi
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/bin/bash"]

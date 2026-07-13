@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# CI 變體（VARIANT=ci）：使用 Dockerfile.unified 建置時建立的固定 builder 帳號，
+# 不做 host UID/GID 對應，維持與 Jenkins/CI 使用固定帳號的既有行為一致。
+if [ "${VARIANT:-dev}" = "ci" ]; then
+    cd /workspace
+    exec gosu builder "$@"
+fi
+
 # 預設 UID/GID = 1000，如果外部有帶 LOCAL_UID/LOCAL_GID 就用外部的
 USER_ID=${LOCAL_UID:-1000}
 GROUP_ID=${LOCAL_GID:-1000}
