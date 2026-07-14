@@ -1,6 +1,6 @@
 ---
 name: quecopen-docker
-description: Build, pull, and run QuecOpen SDK compilation-environment Docker images for any hardware platform (asr1806, sdx35, sdx6x, sdx7x, sdx8x, t830, v620, vscode) in this openchan repo. Use when someone needs to set up a QuecOpen SDK build environment, choose the right image/tag for a platform, run build-image.sh, docker pull/run a prebuilt image, mount an SDK for compiling, add a new platform to the unified build, or debug a build/run failure (asr1806 pip/pyhocon, UID/GID volume permissions, t830 -o, ci-only platforms, Ninja/GN download).
+description: Build, pull, and run QuecOpen SDK compilation-environment Docker images for any hardware platform (asr1806, asr1903, sdx35, sdx6x, sdx7x, sdx8x, t830, v620, vscode) in this openchan repo. Use when someone needs to set up a QuecOpen SDK build environment, choose the right image/tag for a platform, run build-image.sh, docker pull/run a prebuilt image, mount an SDK for compiling, add a new platform to the unified build, or debug a build/run failure (asr1806 pip/pyhocon, UID/GID volume permissions, t830 -o, ci-only platforms, Ninja/GN download).
 ---
 
 # QuecOpen SDK Docker 環境
@@ -14,6 +14,7 @@ description: Build, pull, and run QuecOpen SDK compilation-environment Docker im
 | 平台代號 | OS 代號 | Base image | 支援 variant | 需要 `-o`? |
 | --- | --- | --- | --- | --- |
 | `asr1806` | `ub1604` | ubuntu:16.04 | dev | 否 |
+| `asr1903` | `ub2004` | ubuntu:20.04 | dev | 否 |
 | `sdx35` | `ub1804` | ubuntu:18.04 | dev | 否 |
 | `sdx6x` | `ub1804` | ubuntu:18.04 | dev | 否 |
 | `sdx7x` | `ub1804` | ubuntu:18.04 | dev, **ci** | 否 |
@@ -35,7 +36,7 @@ description: Build, pull, and run QuecOpen SDK compilation-environment Docker im
 
 - **只是要用、不改套件 → 直接 `docker pull` 預建 image**(最快)。對照 README 的「Docker Hub 預建鏡像」表找 `bradlu4/...` image 與 tag。
 - **要改套件或建內部版本、且平台已支援 → 用 `build-image.sh` 走統一 Dockerfile**(見下方,推薦)。
-- **要單獨調某平台、不動統一流程 → 用 `dockerfiles/` 下該平台獨立 Dockerfile 自行 `docker build`**(13 份 legacy Dockerfile 仍保留可用)。
+- **要單獨調某平台、不動統一流程 → 用 `dockerfiles/` 下該平台獨立 Dockerfile 自行 `docker build`**(14 份 legacy Dockerfile 仍保留可用)。
 
 ## 建置:build-image.sh(推薦)
 
@@ -78,5 +79,5 @@ docker run -it --rm \
 - `build-image.sh` — 平台代號 → 呼叫 Dockerfile.unified 的建置腳本(平台矩陣的實作在這裡的關聯陣列)
 - `dockerfiles/Dockerfile.unified` — 由 `PLATFORM`/`OS_VERSION`/`VARIANT` build args 驅動的統一 Dockerfile
 - `dockerfiles/entrypoint.sh` — dev(依主機 UID/GID)與 ci(固定 builder)兩種行為
-- `dockerfiles/dockerfile-quecopen-*` — 13 份 legacy 平台別 Dockerfile,與統一流程並存
+- `dockerfiles/dockerfile-quecopen-*` — 14 份 legacy 平台別 Dockerfile,與統一流程並存
 - `README.md` — 完整的 Docker Hub image 對照表、三種建置方式、注意事項

@@ -1,6 +1,6 @@
 # openchan
 
-本專案適合用來建立 QuecOpen SDK 各硬體平台以 Docker 為基礎的編譯環境，包含 ASR1806、SDX35、SDX6x、SDX7x、SDX8x、T830、V620 等平台，以及給 Jenkins/CI 使用的固定使用者版本。
+本專案適合用來建立 QuecOpen SDK 各硬體平台以 Docker 為基礎的編譯環境，包含 ASR1806、ASR1903、SDX35、SDX6x、SDX7x、SDX8x、T830、V620 等平台，以及給 Jenkins/CI 使用的固定使用者版本。
 
 ## 三種建置方式
 
@@ -77,7 +77,7 @@ docker run -it --rm \
 
 ## 使用統一 Dockerfile 建置（`build-image.sh`）
 
-`dockerfiles/Dockerfile.unified` 將 `dockerfiles/` 下各平台獨立的 Dockerfile 整合成一份，透過 `PLATFORM`／`OS_VERSION`／`VARIANT` build args 切換平台與 dev/CI 變體，方便日後只需維護一份套件清單。原本 13 份平台別 Dockerfile 仍保留、可繼續使用，兩種方式並存。
+`dockerfiles/Dockerfile.unified` 將 `dockerfiles/` 下各平台獨立的 Dockerfile 整合成一份，透過 `PLATFORM`／`OS_VERSION`／`VARIANT` build args 切換平台與 dev/CI 變體，方便日後只需維護一份套件清單。原本的平台別 Dockerfile（目前 14 份）仍保留、可繼續使用，兩種方式並存。
 
 在 repo 根目錄執行 `build-image.sh`，依平台代號產生對應 image：
 
@@ -95,7 +95,7 @@ docker run -it --rm \
 ./build-image.sh -l
 ```
 
-支援的平台代號：`asr1806`、`sdx35`、`sdx6x`、`sdx7x`、`sdx8x`、`t830`、`v620`、`vscode`。只有 `t830` 需要用 `-o` 指定 Ubuntu 版本（`ub1804` 或 `ub2204`）；只有 `sdx7x`／`sdx8x`／`t830` 支援 `-v ci`。預設 tag 命名規則為 `<os_version>-quecopen-<platform>-sdk[-ci]`，如需對齊 Docker Hub 既有名稱可用 `-t` 覆蓋。
+支援的平台代號：`asr1806`、`asr1903`、`sdx35`、`sdx6x`、`sdx7x`、`sdx8x`、`t830`、`v620`、`vscode`。只有 `t830` 需要用 `-o` 指定 Ubuntu 版本（`ub1804` 或 `ub2204`）；只有 `sdx7x`／`sdx8x`／`t830` 支援 `-v ci`。預設 tag 命名規則為 `<os_version>-quecopen-<platform>-sdk[-ci]`，如需對齊 Docker Hub 既有名稱可用 `-t` 覆蓋。
 
 Build 完成後的啟動方式與上方「快速開始」相同，將 image 名稱換成建置出來的 tag 即可。
 
@@ -106,6 +106,7 @@ Build 完成後的啟動方式與上方「快速開始」相同，將 image 名�
 | `dockerfiles/Dockerfile.unified` | 整合所有平台的統一 Dockerfile，搭配 `build-image.sh` 與 `PLATFORM`/`OS_VERSION`/`VARIANT` build args 使用 |
 | `build-image.sh` | 依平台代號呼叫 `dockerfiles/Dockerfile.unified` 產生 image 的建置腳本 |
 | `dockerfiles/dockerfile-quecopen-asr1806-sdk-ub1604` | ASR1806 SDK 編譯環境，Ubuntu 16.04 |
+| `dockerfiles/dockerfile-quecopen-asr1903-sdk-ub2004` | ASR1903 SDK 編譯環境，Ubuntu 20.04 |
 | `dockerfiles/dockerfile-quecopen-sdx35-sdk-ub1804` | SDX35 SDK 編譯環境，Ubuntu 18.04 |
 | `dockerfiles/dockerfile-quecopen-sdx6x-sdk-ub1804` | SDX6x SDK 編譯環境，Ubuntu 18.04 |
 | `dockerfiles/dockerfile-quecopen-sdx7x-sdk-ub1804` | SDX7x SDK 編譯環境，Ubuntu 18.04 |

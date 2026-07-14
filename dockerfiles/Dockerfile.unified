@@ -39,6 +39,13 @@ RUN set -eux; \
           python-pip wget dos2unix; \
         pip install --no-cache-dir "pyparsing==2.4.7" "pyhocon==0.3.60" \
         ;; \
+      asr1903) \
+        apt-get install -y cpio libzstd1 gcc g++ build-essential asciidoc binutils bzip2 gawk gettext git \
+          libncurses5-dev libz-dev patch make autoconf texinfo unzip sharutils subversion ncurses-term \
+          zlib1g-dev ccache upx lib32gcc1 libc6-dev-i386 uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp \
+          libssl-dev libglib2.0-dev xmlto qemu-utils automake libtool perl unzip cpio bsdiff zstd python3-jinja2 \
+          libarchive-zip-perl rsync wget python2 python3 \
+        ;; \
       sdx35) \
         apt-get install -y gcc g++ binutils patch bzip2 flex make gettext pkg-config unzip zlib1g-dev libc6-dev \
           subversion libncurses5-dev gawk sharutils curl libxml-parser-perl python-yaml ocaml-nox ocaml ocaml-findlib \

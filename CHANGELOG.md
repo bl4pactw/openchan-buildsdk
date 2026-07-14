@@ -4,6 +4,21 @@
 
 ## [Unreleased]
 
+### 2026-07-14 — 新增 ASR1903 平台
+
+#### 新增（Added）
+
+- `dockerfiles/dockerfile-quecopen-asr1903-sdk-ub2004`：ASR1903 SDK 編譯環境（Ubuntu 20.04，dev），
+  套件內容與 V620 相近，Python 改裝 `python2` 與 `python3`。
+- `build-image.sh` 與 `dockerfiles/Dockerfile.unified` 新增 `asr1903` 平台
+  （`ub2004`，僅支援 dev variant），可用 `./build-image.sh -p asr1903` 建置。
+
+#### 變更（Changed）
+
+- README 同步更新：平台清單、統一建置支援的平台代號、專案內容表新增 asr1903 對應項目。
+- `quecopen-docker` skill 同步更新平台對照表與 legacy Dockerfile 數量（13 → 14 份）。
+- Docker Hub 目前尚無 ASR1903 預建 image，README 預建鏡像表暫不列入，待發布後再補。
+
 ### 2026-07-13 — 統一 Dockerfile 建置與目錄整理
 
 #### 新增（Added）

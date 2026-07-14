@@ -8,6 +8,7 @@ BUILD_CONTEXT="${SCRIPT_DIR}/dockerfiles"
 
 declare -A PLATFORM_BASE_IMAGE=(
   [asr1806]="ubuntu:16.04"
+  [asr1903]="ubuntu:20.04"
   [sdx35]="ubuntu:18.04"
   [sdx6x]="ubuntu:18.04"
   [sdx7x]="ubuntu:18.04"
@@ -17,6 +18,7 @@ declare -A PLATFORM_BASE_IMAGE=(
 )
 declare -A PLATFORM_OS_VERSION=(
   [asr1806]="ub1604"
+  [asr1903]="ub2004"
   [sdx35]="ub1804"
   [sdx6x]="ub1804"
   [sdx7x]="ub1804"
@@ -26,6 +28,7 @@ declare -A PLATFORM_OS_VERSION=(
 )
 declare -A PLATFORM_VARIANTS=(
   [asr1806]="dev"
+  [asr1903]="dev"
   [sdx35]="dev"
   [sdx6x]="dev"
   [sdx7x]="dev ci"
@@ -34,7 +37,7 @@ declare -A PLATFORM_VARIANTS=(
   [v620]="dev"
   [vscode]="dev"
 )
-ALL_PLATFORMS="asr1806 sdx35 sdx6x sdx7x sdx8x t830 v620 vscode"
+ALL_PLATFORMS="asr1806 asr1903 sdx35 sdx6x sdx7x sdx8x t830 v620 vscode"
 
 usage() {
   cat <<EOF

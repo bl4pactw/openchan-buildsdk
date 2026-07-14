@@ -29,14 +29,14 @@
 
 entrypoint 是平台無關的,只分 dev / ci 兩條路:
 
-- `VARIANT=ci` → `cd /workspace` 後以固定 `builder`(UID/GID 1000,在 Dockerfile.unified 第 128 行建立)執行,不做 host UID/GID 對應。
+- `VARIANT=ci` → `cd /workspace` 後以固定 `builder`(UID/GID 1000,在 Dockerfile.unified 尾端的 `VARIANT=ci` 分支建立)執行,不做 host UID/GID 對應。
 - 其他(dev)→ 依 `LOCAL_UID`/`LOCAL_GID`/`LOCAL_USER` 動態建立使用者、修 `~/sdk` 權限、給免密碼 sudo,再用 gosu 切換。
 
 只有在你要改變 dev/ci 的啟動行為(例如換工作目錄、換權限策略)時才動它。
 
 ## 向後相容的鐵則
 
-- legacy 的 13 份平台別 Dockerfile **不設 `VARIANT`**,entrypoint 因此走 `${VARIANT:-dev}` 的 dev 分支 — 這是刻意的相容設計。改 entrypoint 時**不可破壞未帶 VARIANT 時的 dev 行為**。
+- legacy 的 14 份平台別 Dockerfile **不設 `VARIANT`**,entrypoint 因此走 `${VARIANT:-dev}` 的 dev 分支 — 這是刻意的相容設計。改 entrypoint 時**不可破壞未帶 VARIANT 時的 dev 行為**。
 - 新增平台**不會**動到既有平台的分支;保持每個平台分支彼此獨立。
 
 ## 驗證(必做)
