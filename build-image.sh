@@ -6,38 +6,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOCKERFILE="${SCRIPT_DIR}/dockerfiles/Dockerfile.unified"
 BUILD_CONTEXT="${SCRIPT_DIR}/dockerfiles"
 
-declare -A PLATFORM_BASE_IMAGE=(
-  [asr1806]="ubuntu:16.04"
-  [asr1903]="ubuntu:20.04"
-  [sdx35]="ubuntu:18.04"
-  [sdx6x]="ubuntu:18.04"
-  [sdx7x]="ubuntu:18.04"
-  [sdx8x]="ubuntu:22.04"
-  [v620]="ubuntu:20.04"
-  [vscode]="ubuntu:22.04"
-)
-declare -A PLATFORM_OS_VERSION=(
-  [asr1806]="ub1604"
-  [asr1903]="ub2004"
-  [sdx35]="ub1804"
-  [sdx6x]="ub1804"
-  [sdx7x]="ub1804"
-  [sdx8x]="ub2204"
-  [v620]="ub2004"
-  [vscode]="ub2204"
-)
-declare -A PLATFORM_VARIANTS=(
-  [asr1806]="dev"
-  [asr1903]="dev"
-  [sdx35]="dev"
-  [sdx6x]="dev"
-  [sdx7x]="dev ci"
-  [sdx8x]="dev ci"
-  [t830]="dev ci"
-  [v620]="dev"
-  [vscode]="dev"
-)
-ALL_PLATFORMS="asr1806 asr1903 sdx35 sdx6x sdx7x sdx8x t830 v620 vscode"
+# 平台矩陣（PLATFORM_BASE_IMAGE / PLATFORM_OS_VERSION / PLATFORM_VARIANTS /
+# ALL_PLATFORMS 與 resolve_platform_os、list_platforms 等函式）集中在 platforms.sh，
+# 與 run-image.sh 共用同一份定義。新增平台請改 platforms.sh。
+# shellcheck source=platforms.sh
+. "${SCRIPT_DIR}/platforms.sh"
 
 usage() {
   cat <<EOF
@@ -56,17 +29,6 @@ Examples:
   $0 -p t830 -o ub1804 -v ci
   $0 -p sdx7x -v ci -t my-sdx7x-ci-img
 EOF
-}
-
-list_platforms() {
-  echo "支援的平台:"
-  for p in $ALL_PLATFORMS; do
-    if [ "$p" = "t830" ]; then
-      echo "  t830      os: ub1804|ub2204 (預設 ub2204)   variant: ${PLATFORM_VARIANTS[$p]}"
-    else
-      echo "  ${p}      os: ${PLATFORM_OS_VERSION[$p]}   variant: ${PLATFORM_VARIANTS[$p]}"
-    fi
-  done
 }
 
 PLATFORM=""
@@ -96,33 +58,14 @@ if [ -z "$PLATFORM" ]; then
   exit 1
 fi
 
-case " $ALL_PLATFORMS " in
-  *" $PLATFORM "*) ;;
-  *)
-    echo "Error: unknown platform '$PLATFORM'." >&2
-    list_platforms
-    exit 1
-    ;;
-esac
-
-# 決定 OS_VERSION / BASE_IMAGE
-if [ "$PLATFORM" = "t830" ]; then
-  OS_VERSION="${OS_VERSION:-ub2204}"
-  case "$OS_VERSION" in
-    ub1804) BASE_IMAGE="ubuntu:18.04" ;;
-    ub2204) BASE_IMAGE="ubuntu:22.04" ;;
-    *)
-      echo "Error: t830 只支援 -o ub1804 或 ub2204。" >&2
-      exit 1
-      ;;
-  esac
-else
-  if [ -n "$OS_VERSION" ] && [ "$OS_VERSION" != "${PLATFORM_OS_VERSION[$PLATFORM]}" ]; then
-    echo "Warning: platform '$PLATFORM' 固定使用 ${PLATFORM_OS_VERSION[$PLATFORM]}，忽略 -o $OS_VERSION。" >&2
-  fi
-  OS_VERSION="${PLATFORM_OS_VERSION[$PLATFORM]}"
-  BASE_IMAGE="${PLATFORM_BASE_IMAGE[$PLATFORM]}"
+if ! platform_is_valid "$PLATFORM"; then
+  echo "Error: unknown platform '$PLATFORM'." >&2
+  list_platforms
+  exit 1
 fi
+
+# 決定 OS_VERSION / BASE_IMAGE（t830 的 -o 特案處理在 platforms.sh 裡）
+resolve_platform_os "$PLATFORM" "$OS_VERSION" || exit 1
 
 # 檢查 variant 是否支援
 SUPPORTED_VARIANTS="${PLATFORM_VARIANTS[$PLATFORM]}"

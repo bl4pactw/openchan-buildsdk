@@ -1,0 +1,13 @@
+# SDK 源碼包放置目錄。
+#
+# run-image.sh 會把這個目錄掛進容器的 ~/sdk。裡面放的是各 QuecOpen SDK release
+# package（動輒數十 GB，且往往自帶 .git），絕對不應該進入本 repo 的版本控制。
+/sdk/
+
+# 編輯器 / 作業系統雜項
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
